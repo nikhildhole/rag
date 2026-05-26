@@ -1,6 +1,4 @@
-# RAG Interview Notes
-
-Concise notes for discussing Retrieval-Augmented Generation (RAG) in an interview. Focus on architecture, key trade-offs, and implementation patterns.
+# RAG
 
 ## What is RAG?
 
@@ -119,12 +117,3 @@ Concise notes for discussing Retrieval-Augmented Generation (RAG) in an intervie
 - Measure p95/p99 latency and tune indexes.
 - Monitor: query latency, retrieval quality drift, embedding drift, error rates, cost.
 - Debugging: log retrieved IDs, prompt state, and embedding fingerprints.
-
-## Quick Interview Checklist
-
-- Define RAG clearly.
-- Describe the architecture in stages.
-- Explain the role of chunking and embeddings.
-- Compare dense, sparse, and hybrid retrieval.
-- Mention prompt composition and hallucination mitigation.
-- Talk about evaluation metrics and production monitoring.
