@@ -16,7 +16,7 @@
 6. Generation and answer synthesis
 7. Evaluation and monitoring
 
-## Key Interview Themes
+---
 
 - **Why use RAG?**
   - Scale knowledge beyond model pretraining.
@@ -35,7 +35,6 @@
 
 - Sources: PDFs, HTML, emails, chat logs, support tickets, transcripts, audio/video (with transcription).
 - Important: normalize encodings, preserve metadata (source, author, timestamp, URL), track provenance.
-- Interview note: mention ingestion as the first step and why clean input matters.
 
 ## Document Processing & Chunking
 
@@ -54,7 +53,6 @@
 - Dense embeddings: transformer-based, semantic similarity.
 - Sparse embeddings: token/term-based, good for keyword or interpretability.
 - Use multimodal embeddings when data includes text+image/audio.
-- Interview point: choose embeddings based on recall, cost, and ecosystem support.
 
 ## Storage & Indexing
 
@@ -103,7 +101,6 @@
   - retrieved evidence.
 - Use grounding prompts to force citation and limit hallucination.
 - Options: direct answer, chain-of-thought, multi-step reasoning.
-- Interview tip: mention guardrails and safety prompts.
 
 ## Evaluation
 
