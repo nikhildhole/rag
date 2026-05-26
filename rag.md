@@ -4,7 +4,7 @@
 
 - RAG = Retrieval-Augmented Generation.
 - Combines retrieval from a document collection with an LLM for generation.
-- Goal: ground responses in source data, reduce hallucinations, and support up-to-date or proprietary knowledge.
+- Goal: ground responses in source data, reduce hallucinations, and use current or private knowledge.
 
 ## Core RAG Components
 
@@ -21,7 +21,7 @@
 - **Why use RAG?**
   - Scale knowledge beyond model pretraining.
   - Update knowledge quickly without retraining.
-  - Provide citations and provenance.
+  - Show source references and where the answer came from.
 - **Main risks**
   - Retrieval errors, stale data, hallucinations, cost from many retrieval calls.
   - Token limits in prompt context.
@@ -34,7 +34,7 @@
 ## Document Ingestion
 
 - Sources: PDFs, HTML, emails, chat logs, support tickets, transcripts, audio/video (with transcription).
-- Important: normalize encodings, preserve metadata (source, author, timestamp, URL), track provenance.
+- Important: normalize encodings, keep metadata (source, author, timestamp, URL), and track where each piece came from.
 
 ## Document Processing & Chunking
 
@@ -91,7 +91,7 @@
 - Deduplicate overlapping chunks.
 - Order by relevance, chronology, or source trust.
 - Enforce token budget: keep high-signal chunks and compress or truncate low-value context.
-- Attach citations to support answers.
+- Attach source references to support answers.
 
 ## Generation Layer
 
@@ -99,7 +99,7 @@
   - system instructions,
   - user query,
   - retrieved evidence.
-- Use grounding prompts to force citation and limit hallucination.
+- Use grounding prompts to ask the model to reference sources and limit hallucination.
 - Options: direct answer, chain-of-thought, multi-step reasoning.
 
 ## Evaluation
