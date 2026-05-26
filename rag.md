@@ -1,91 +1,130 @@
-# RAG
+# RAG Interview Notes
 
-Brief overview of a Retrieval-Augmented Generation (RAG) system: components, trade-offs, and practical recommendations for building a production-ready pipeline.
+Concise notes for discussing Retrieval-Augmented Generation (RAG) in an interview. Focus on architecture, key trade-offs, and implementation patterns.
 
-## 1. Document Sources / Ingestion
+## What is RAG?
 
-- Supported formats: Q&A logs, PDF, HTML/websites, emails, chat transcripts, audio/video (requires transcription).
-- Notes: normalize encodings, preserve source metadata (timestamps, authors, URLs), and record provenance for citations.
+- RAG = Retrieval-Augmented Generation.
+- Combines retrieval from a document collection with an LLM for generation.
+- Goal: ground responses in source data, reduce hallucinations, and support up-to-date or proprietary knowledge.
 
-## 2. Document Processing
+## Core RAG Components
 
-- Steps: cleaning, language detection, metadata extraction, deduplication, OCR/text extraction and parsing.
-- Tip: apply lightweight normalization (unicode, punctuation) and keep an audit trail for each document.
+1. Document ingestion
+2. Document processing and chunking
+3. Embedding and vector storage
+4. Retrieval/search layer
+5. Context assembly and prompt construction
+6. Generation and answer synthesis
+7. Evaluation and monitoring
 
-## 3. Chunking Strategies
+## Key Interview Themes
 
-See detailed strategies in [chunking_strategies.md](chunking_strategies.md)
+- **Why use RAG?**
+  - Scale knowledge beyond model pretraining.
+  - Update knowledge quickly without retraining.
+  - Provide citations and provenance.
+- **Main risks**
+  - Retrieval errors, stale data, hallucinations, cost from many retrieval calls.
+  - Token limits in prompt context.
+- **Strong answer structure**
+  - Define the concept.
+  - Mention architecture.
+  - Note trade-offs.
+  - Give an example.
 
-Main approaches:
+## Document Ingestion
 
-- **Fixed-size chunking**: simple, predictable token counts; use overlap to preserve context.
-- **Recursive chunking**: split on semantic boundaries (headings, paragraphs) for higher-quality retrieval.
-- **Semantic chunking**: compute embeddings to detect topic shifts and split at semantic boundaries.
-- **Sentence-based chunking**: fixed number of sentences per chunk with clean semantic boundaries.
-- **Document structure-aware chunking**: leverages markdown/HTML hierarchy and headings.
-- **Sliding window**: useful for sequence continuity; tune chunk size and overlap for target LLM context window.
-- **Agentic/adaptive chunking**: dynamic chunk sizes based on topic density, entropy, and document type.
+- Sources: PDFs, HTML, emails, chat logs, support tickets, transcripts, audio/video (with transcription).
+- Important: normalize encodings, preserve metadata (source, author, timestamp, URL), track provenance.
+- Interview note: mention ingestion as the first step and why clean input matters.
 
-## 4. Embedding Models
+## Document Processing & Chunking
 
-- Dense embeddings (transformer-based) are general-purpose; choose model size vs cost trade-offs.
-- Sparse embeddings (e.g., token/term-based) help with interpretability and keyword matching.
-- Multimodal embeddings for image/audio+text use-cases; consider domain-specific fine-tuning when necessary.
+- Clean text, detect language, extract metadata, dedupe, OCR where needed.
+- Chunking is critical for retrieval quality.
+- Reference: [chunking_strategies.md](chunking_strategies.md)
+- Common chunking styles:
+  - Fixed-size chunks with overlap.
+  - Recursive/semantic chunks using headings, paragraphs, topic boundaries.
+  - Sentence-based chunks for clean context.
+  - Sliding window for long documents.
+  - Adaptive chunking based on density or structure.
 
-## 5. Storage Layer
+## Embeddings
 
-- Recommended components: Vector DB (search), Document store (source retrieval/metadata), Object storage (raw files), Relational DB (app data).
-- Examples: choose a vector DB that supports your scale and desired ANN index types and metadata filtering.
+- Dense embeddings: transformer-based, semantic similarity.
+- Sparse embeddings: token/term-based, good for keyword or interpretability.
+- Use multimodal embeddings when data includes text+image/audio.
+- Interview point: choose embeddings based on recall, cost, and ecosystem support.
 
-## 6. Indexing
+## Storage & Indexing
 
-- Index types: ANN (approximate nearest neighbor), BM25/keyword, or hybrid indexes combining both.
-- Operational concerns: incremental indexing, sharding/partitioning, and reindexing strategies for embeddings updates.
+- Storage layers:
+  - Vector DB for ANN search.
+  - Document store for metadata and source retrieval.
+  - Object store for raw files.
+  - Relational DB for application data.
+- Index choices:
+  - ANN indexes (HNSW, IVF/PQ, ScaNN, DiskANN).
+  - Sparse/BM25 indexes.
+  - Hybrid indexes combining semantic and keyword retrieval.
+- Operational concerns: incremental updates, sharding, and reindexing.
 
-## 7. ANN Algorithms
+## Retrieval Strategies
 
-- Common options: HNSW (fast, memory-heavy), IVF/PQ (disk-friendly), ScaNN, DiskANN.
-- Choose based on latency, memory, and recall trade-offs; benchmark on realistic query loads.
+- Dense retrieval: semantic nearest-neighbor on vectors.
+- Sparse retrieval: BM25 / exact keyword matching.
+- Hybrid retrieval: combine both for better precision+recall.
+- Use metadata filters and query rewriting for better relevance.
 
-## 8. Retrieval / Search Algorithms
+## Query Understanding & Reranking
 
-- Dense retrieval: nearest-neighbor on embeddings for semantic matches.
-- Sparse retrieval: BM25/term-based for exact keyword signals.
-- Hybrid retrieval: combine dense + sparse for better recall and precision; add metadata filters.
+- Query work:
+  - Rewrite/expand queries.
+  - Detect intent and entities.
+  - Route to specialized indexes.
+- Reranking:
+  - Cross-encoder rerankers improve ordering.
+  - LLM rerankers can add safety and context-aware relevance.
+  - Consider diversity, recency, and freshness in reranking.
 
-## 9. Query Understanding
+## Context Assembly
 
-- Techniques: query rewriting, expansion, intent detection, entity extraction, decomposition, and routing to specialized indexes or models.
-- Use lightweight rewriting to map user intent to better retrieval queries.
+- Collect top retrieval results.
+- Deduplicate overlapping chunks.
+- Order by relevance, chronology, or source trust.
+- Enforce token budget: keep high-signal chunks and compress or truncate low-value context.
+- Attach citations to support answers.
 
-## 10. Reranking
+## Generation Layer
 
-- Cross-encoder rerankers (pairwise) improve ordering at the cost of compute.
-- LLM reranking can incorporate broader context and safety checks.
-- Consider diversity and freshness when reranking results.
+- Build prompts with:
+  - system instructions,
+  - user query,
+  - retrieved evidence.
+- Use grounding prompts to force citation and limit hallucination.
+- Options: direct answer, chain-of-thought, multi-step reasoning.
+- Interview tip: mention guardrails and safety prompts.
 
-## 11. Context Assembly
+## Evaluation
 
-- Deduplicate retrieved chunks, order by relevance and chronology, and attach citations/provenance.
-- Token budgeting: prioritize high-signal chunks and apply context compression when near the LLM token limit.
+- Retrieval metrics: Recall@K, MRR, nDCG.
+- Generation metrics: factuality, hallucination rate, answer relevance, helpfulness.
+- Mention human evaluation and A/B testing for production systems.
 
-## 12. Generation Layer
+## Scalability & Observability
 
-- Compose prompts with system + user + retrieved context; use templates and guardrails for safety and factuality.
-- Options: direct generation, chain-of-thought, or grounding prompts that ask the model to cite sources.
+- Scale with caching, batching, streaming, async pipelines, horizontal scaling.
+- Measure p95/p99 latency and tune indexes.
+- Monitor: query latency, retrieval quality drift, embedding drift, error rates, cost.
+- Debugging: log retrieved IDs, prompt state, and embedding fingerprints.
 
-## 13. Evaluation
+## Quick Interview Checklist
 
-- Retrieval metrics: Recall@K, MRR, nDCG; evaluate on held-out queries with labeled positives.
-- Generation metrics: factuality/faithfulness, hallucination rate, answer relevance and helpfulness.
-- Use human evaluation and online A/B testing to measure end-to-end impact.
-
-## 14. Scalability & Latency
-
-- Techniques: caching, batching, streaming responses, horizontal scaling, GPU acceleration, async pipelines.
-- Measure p95/p99 latencies and tune index/configuration to meet SLOs.
-
-## 15. Monitoring & Observability
-
-- Track query traces, latency, retrieval quality drift, embedding drift, error rates, and cost.
-- Log retrieved ids + embeddings fingerprints to help debug and detect regressions.
+- Define RAG clearly.
+- Describe the architecture in stages.
+- Explain the role of chunking and embeddings.
+- Compare dense, sparse, and hybrid retrieval.
+- Mention prompt composition and hallucination mitigation.
+- Talk about evaluation metrics and production monitoring.
