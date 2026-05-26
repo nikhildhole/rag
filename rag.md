@@ -22,14 +22,6 @@
   - Scale knowledge beyond model pretraining.
   - Update knowledge quickly without retraining.
   - Show source references and where the answer came from.
-- **Main risks**
-  - Retrieval errors, stale data, hallucinations, cost from many retrieval calls.
-  - Token limits in prompt context.
-- **Strong answer structure**
-  - Define the concept.
-  - Mention architecture.
-  - Note trade-offs.
-  - Give an example.
 
 ## Document Ingestion
 
