@@ -2,9 +2,7 @@
 
 ## What is RAG?
 
-- RAG = Retrieval-Augmented Generation.
-- Combines retrieval from a document collection with an LLM for generation.
-- Goal: ground responses in source data, reduce hallucinations, and use current or private knowledge.
+RAG is a method that combines information retrieval with an LLM. Before answering, the model searches a document collection or knowledge base for relevant context and uses it to generate a grounded response. This improves accuracy, reduces hallucinations, and helps work with current or private data.
 
 ## Core RAG Components
 
