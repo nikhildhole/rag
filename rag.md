@@ -4,6 +4,14 @@
 
 RAG is a method that combines information retrieval with an LLM. Before answering, the model searches a document collection or knowledge base for relevant context and uses it to generate a grounded response. This improves accuracy, reduces hallucinations, and helps work with current or private data.
 
+## How does it work?”
+
+Typically, documents are converted into embeddings and stored in a vector database. When a user asks a question, the system retrieves the most relevant chunks using semantic search, adds them to the prompt, and the LLM generates an answer based on that retrieved context.
+
+## Why do we use RAG?
+
+RAG is useful because it lets an LLM access external and up-to-date knowledge, avoids retraining whenever information changes, and provides source-backed answers for better accuracy and trust.
+
 ## Core RAG Components
 
 1. Document ingestion
@@ -15,11 +23,6 @@ RAG is a method that combines information retrieval with an LLM. Before answerin
 7. Evaluation and monitoring
 
 ---
-
-- **Why use RAG?**
-  - Scale knowledge beyond model pretraining.
-  - Update knowledge quickly without retraining.
-  - Show source references and where the answer came from.
 
 ## Document Ingestion
 
