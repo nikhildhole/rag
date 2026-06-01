@@ -2,15 +2,57 @@
 
 ## What is RAG?
 
-RAG is a method that combines information retrieval with an LLM. Before answering, the model searches a document collection or knowledge base for relevant context and uses it to generate a grounded response. This improves accuracy, reduces hallucinations, and helps work with current or private data.
+“RAG stands for Retrieval-Augmented Generation. It is a technique where, before generating an answer, the system retrieves relevant information from external documents.
 
-## How does it work?”
+In practice, we convert documents into embeddings and store them in a vector database. When a user asks a question, the query is also converted into an embedding, and semantic search is used to retrieve the most relevant document chunks. Those retrieved chunks are added as context to the LLM, which then generates a response based on that information.
 
-Typically, documents are converted into embeddings and stored in a vector database. When a user asks a question, the system retrieves the most relevant chunks using semantic search, adds them to the prompt, and the LLM generates an answer based on that retrieved context.
+We use RAG to provide business-specific, private, or up-to-date answers and reduce hallucinations.”
+
+## How does it work?
+
+RAG works by retrieving relevant information before the LLM generates an answer.
+
+Typically, documents from a knowledge source (PDFs, databases, websites, support tickets, internal company docs, etc.) are first processed and split into smaller chunks. These chunks are converted into embeddings using an embedding model and stored in a vector database for efficient retrieval.
+
+When a user asks a question, the query is also converted into an embedding. The system performs semantic search to find the most relevant chunks by comparing the query embedding with stored document embeddings.
+
+The retrieved chunks are then added to the prompt as context and sent to the LLM. Instead of answering only from its training knowledge, the model generates a response grounded in the retrieved information.
+
+Simple flow:
+
+Documents
+→ Chunking
+→ Embeddings
+→ Vector DB storage
+
+User query
+→ Query embedding
+→ Semantic retrieval of relevant chunks
+→ Context added to prompt
+→ LLM generates grounded answer
 
 ## Why do we use RAG?
 
-RAG is useful because it lets an LLM access external and up-to-date knowledge, avoids retraining whenever information changes, and provides source-backed answers for better accuracy and trust.
+RAG is used because standalone LLMs have limitations: they may hallucinate, lack access to private business knowledge, or not know recently updated information.
+
+By retrieving external information at query time, RAG allows the model to answer using relevant and current context instead of relying only on what it learned during training.
+
+Benefits of RAG include:
+
+- **Access to external knowledge**: use company documents, databases, policies, or domain-specific information.
+- **Up-to-date responses**: update knowledge by changing documents instead of retraining the model.
+- **Reduced hallucination**: answers are grounded in retrieved evidence.
+- **Business-specific answers**: provide responses tailored to organizational data and workflows.
+- **Source-backed responses**: retrieved chunks can be referenced for transparency and trust.
+- **Cost efficiency**: avoids expensive model retraining whenever information changes.
+
+Example:
+
+Without RAG:
+An LLM may answer from outdated or generic knowledge.
+
+With RAG:
+The system retrieves relevant business documents and the LLM answers using that retrieved context, improving accuracy and relevance.
 
 ## Core RAG Components
 
@@ -26,8 +68,111 @@ RAG is useful because it lets an LLM access external and up-to-date knowledge, a
 
 ## Document Ingestion
 
-- Sources: PDFs, HTML, emails, chat logs, support tickets, transcripts, audio/video (with transcription).
-- Important: normalize encodings, keep metadata (source, author, timestamp, URL), and track where each piece came from.
+Document ingestion is the process of collecting and importing data into a RAG system so it can later be processed, indexed, and retrieved.
+
+The goal of ingestion is to gather information from different sources and prepare it for downstream stages such as chunking, embedding generation, and retrieval.
+
+Common data sources include:
+
+- PDFs and documents
+- HTML/web pages
+- Emails
+- Chat logs and support tickets
+- Knowledge base articles
+- Transcripts
+- Audio/video files (after transcription)
+- Databases, APIs, or internal business systems
+
+During ingestion, the system extracts raw content and associated metadata while preserving traceability.
+
+Important ingestion tasks include:
+
+### Data extraction
+
+Extract readable content from raw sources.
+
+Examples:
+
+- Parse text from PDFs or Word documents
+- Scrape HTML content
+- Convert audio/video into text using transcription
+- Read structured records from databases
+
+### Metadata collection
+
+Metadata helps retrieval, filtering, ranking, and source attribution.
+
+Common metadata fields:
+
+- source document
+- file name
+- author
+- timestamp/date
+- URL
+- department or category
+- document version
+- access permissions
+
+Example:
+
+```text
+Chunk:
+"Employees are eligible for remote work after 6 months"
+
+Metadata:
+source = HR_policy.pdf
+page = 14
+department = HR
+timestamp = 2025-01-15
+```
+
+### Data normalization
+
+Different sources may use inconsistent formats or encodings.
+
+Typical normalization tasks:
+
+- normalize text encoding (UTF-8)
+- remove corrupted characters
+- standardize whitespace and formatting
+- clean HTML noise
+- unify timestamps and date formats
+
+This improves downstream chunking and embedding quality.
+
+### Deduplication
+
+Remove duplicate or repeated content to avoid redundant retrieval and wasted storage.
+
+Example:
+
+The same FAQ document may exist in:
+
+- email attachment
+- internal wiki
+- PDF export
+
+Keeping duplicates can bias retrieval.
+
+### Traceability and lineage
+
+Track where each piece of information came from.
+
+This is important for:
+
+- citations/source-backed responses
+- debugging retrieval failures
+- compliance and auditing
+- trust and explainability
+
+Simple flow:
+
+Raw sources
+→ Extract content
+→ Normalize + clean
+→ Attach metadata
+→ Deduplicate
+→ Ready for chunking and embeddings
 
 ## Document Processing & Chunking
 
@@ -43,9 +188,17 @@ RAG is useful because it lets an LLM access external and up-to-date knowledge, a
 
 ## Embeddings
 
-- Dense embeddings: transformer-based, semantic similarity.
-- Sparse embeddings: token/term-based, good for keyword or interpretability.
-- Use multimodal embeddings when data includes text+image/audio.
+Embeddings convert text, images, or other data into numerical vector representations that capture semantic meaning. In RAG, document chunks and user queries are embedded into the same vector space to enable similarity-based retrieval.
+
+Common embedding types:
+
+- **Dense embeddings**: transformer-based vectors for semantic similarity and natural language understanding.
+- **Sparse embeddings**: token/term-based representations (e.g., BM25/TF-IDF) for keyword precision and interpretability.
+- **Multimodal embeddings**: represent text, image, audio, or video in a shared space for cross-modal retrieval.
+
+Embeddings are typically stored in a vector database and used for nearest-neighbor search during retrieval.
+
+See: [embeddings.md](embeddings.md)
 
 ## Storage & Indexing
 
