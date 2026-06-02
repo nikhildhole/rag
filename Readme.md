@@ -486,8 +486,6 @@ Even with strong retrieval, poor prompt construction or grounding can produce we
 
 ## Evaluation
 
-## Evaluation
-
 Evaluation measures how well a RAG system retrieves relevant information and generates accurate, grounded responses. Since RAG involves both retrieval and generation, evaluation is typically divided into retrieval quality and answer quality.
 
 Key areas:
@@ -501,8 +499,6 @@ Key areas:
 The goal of evaluation is to improve retrieval quality, reduce hallucinations, and ensure reliable, high-quality responses over time.
 
 See: [evaluation.md](evaluation.md)
-
-## Scalability & Observability
 
 ## Scalability & Observability
 
