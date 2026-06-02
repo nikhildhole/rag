@@ -350,7 +350,7 @@ Documents
 
 ---
 
-## Interview Questions
+## Questions
 
 1. What are embeddings?
 2. How are embeddings used in RAG?

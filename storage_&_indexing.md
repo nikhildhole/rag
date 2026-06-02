@@ -150,10 +150,6 @@ Used in:
 - pgvector
 - Milvus
 
-Typical interview explanation:
-
-> HNSW is often preferred in production RAG systems because it provides low latency and high retrieval accuracy, especially for large embedding collections.
-
 ---
 
 ### IVF (Inverted File Index)
@@ -594,7 +590,7 @@ Challenges:
 
 ## 10. Storage Design Tradeoffs
 
-Typical interview question:
+Question:
 
 **"How would you design storage for a production RAG system?"**
 

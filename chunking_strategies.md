@@ -746,9 +746,7 @@ This dramatically improves retrieval quality.
 
 ---
 
-# Interview-Ready Knowledge
-
-## Common Interview Questions
+# Common Questions
 
 ### 1. "How do you choose a chunking strategy?"
 
