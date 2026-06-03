@@ -362,3 +362,75 @@ Documents
 8. What causes poor retrieval quality?
 9. Why does chunking affect embeddings?
 10. What is embedding drift?
+
+---
+
+## Common Embedding Models
+
+- **OpenAI — ada-002**: **Dimension:** 1536. **When to use / Why:** Good general-purpose English embeddings for production RAG when using a managed API. Balanced quality and cost, widely used as a reliable default. **Notes:** Cloud-only, store model name and version with vectors for reproducibility.
+
+- **OpenAI — text-embedding-3-small**: **Dimension:** 1536 (provider docs may update). **When to use / Why:** Modern general-purpose embedding with competitive quality; good default for many retrieval tasks. **Notes:** Check provider for best-fit variant and costs.
+
+- **sentence-transformers/all-MiniLM-L6-v2 (Hugging Face)**: **Dimension:** 384. **When to use / Why:** Low-latency, low-cost, and tiny memory footprint — ideal for on-device or local deployments and fast indexing. **Tradeoffs:** Lower capacity for subtle semantic distinctions.
+
+- **sentence-transformers/all-mpnet-base-v2**: **Dimension:** 768. **When to use / Why:** Strong general-purpose semantic quality for English; good balance of performance and size for many production systems.
+
+- **LaBSE (Language-agnostic BERT Sentence Embeddings)**: **Dimension:** 768. **When to use / Why:** Multilingual and cross-lingual retrieval — use when you need consistent embeddings across many languages.
+
+- **CLIP (e.g., ViT-B/32) — multimodal**: **Dimension:** 512. **When to use / Why:** Image⇄text retrieval and multimodal RAG. Use CLIP-style models to embed images and short text into a shared space.
+
+- **Domain-specific / Fine-tuned models**: Dimensions vary. **When to use / Why:** Fine-tune or train a sentence-transformer when your domain (legal, medical, product catalogs) contains jargon or specialized semantics — yields the best retrieval quality for that domain.
+
+### Practical notes on model selection
+
+- **Dimension tradeoffs:** Smaller dims (e.g., 384) → faster, cheaper, less storage; larger dims (e.g., 768–1536+) → richer semantics but higher cost and index size. Pick based on retrieval quality targets, storage budget, and latency.
+- **Local vs managed:** Use Hugging Face / sentence-transformers for offline/local inference and reproducibility. Use managed APIs for operational simplicity and regular model updates.
+- **Versioning:** Always record model name + version + preprocessing pipeline in vector metadata so you can re-run or re-embed if needed.
+- **Benchmarking:** Evaluate candidates on a small labeled dev set (precision@k, recall@k, MRR) and also measure downstream generation quality in your RAG prompts.
+
+---
+
+## Embedding Drift
+
+### What is embedding drift?
+
+Embedding drift is the gradual or sudden change in the properties or distribution of embeddings over time such that retrieval quality degrades. Drift can cause previously relevant documents to rank lower or for semantically similar items to move farther apart in vector space.
+
+### Why embedding drift occurs
+
+- **Document/content drift (data drift):** The corpus evolves (new topics, vocabulary, styles) but old embeddings are not refreshed.
+- **Concept drift:** The meaning or significance of terms changes (e.g., new product names, slang, changing technical usage).
+- **Preprocessing or pipeline changes:** Tokenization, normalization, chunking, or stopword handling changed between embedding runs.
+- **Model updates or swapping:** Upgrading/downgrading embedding models (or provider rolled new weights) changes the embedding geometry.
+- **Partial re-embedding:** Only some documents get re-embedded (e.g., new items), mixing vectors from different model versions.
+
+### How to detect embedding drift
+
+- **Embedding metadata audits:** Track model name/version and preprocessing used for each vector; detect mixed versions.
+- **Statistical distribution monitoring:** Compute summary statistics over embeddings (mean vector, norms, variance) and track shifts over time. Large changes indicate drift.
+- **Similarity-to-anchors:** Keep a set of stable anchor texts and monitor their average cosine similarity to nearest neighbors in the corpus. Falling similarity signals drift.
+- **Nearest-neighbor stability:** For a set of probe queries, track how often the top-k results change (rank persistence). Sudden or consistent changes signal drift.
+- **Downstream performance metrics:** Monitor retrieval metrics (precision@k, recall@k, MRR) on a labeled dev set and monitor generation quality (ROUGE, human evals) if available.
+- **Embedding norm / compactness checks:** Track per-vector norms and pairwise distance distributions; dramatic shifts can indicate model or preprocessing changes.
+- **Visual checks:** Periodically reduce embeddings via PCA/UMAP/t-SNE and inspect clustering; useful for investigations though not production-only signals.
+
+### How to fix or mitigate embedding drift
+
+- **Version and metadata discipline:** Persist model name, version, and preprocessing used with each vector. Refuse to mix vectors from different model versions without intentional migration.
+- **Re-embedding strategy:** Schedule periodic full re-embeddings or incremental re-embedding strategies based on content churn. For high-change domains, re-embed nightly or weekly; for stable domains, re-embed less frequently.
+- **Anchors and A/B tests:** Maintain anchor queries and run A/B comparisons when changing models to quantify impact before rolling out.
+- **Canary / staged rollouts:** Re-embed a subset of the corpus and validate retrieval/generation before a global re-index.
+- **Hybrid retrieval fallback:** Use a hybrid dense+sparse approach or a keyword fallback to reduce user-facing regressions while re-embedding.
+- **Automated drift alerts:** Set thresholds for distributional metrics (e.g., mean cosine drop, KL divergence of projection) and alert when exceeded.
+- **Preprocessing stability:** Keep preprocessing deterministic and documented; include the preprocessing code or hash in vector metadata.
+- **Incremental rolling reindex with consistency guarantees:** Reindex in a way that maintains availability (e.g., index new vectors in parallel and switch alias after validation).
+
+### Operational checklist
+
+- Store `model_name`, `model_version`, `preprocessing_hash`, and `embed_timestamp` with every vector.
+- Maintain a small labeled dev set for continuous retrieval evaluation.
+- Monitor: average cosine to anchors, distributional metrics, precision@k on dev queries, embedding norms.
+- Automate periodic re-embedding or create an on-change re-embedding pipeline for high-churn content.
+- Run regression checks whenever updating the embedding model or preprocessing.
+
+---
